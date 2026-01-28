@@ -2,39 +2,42 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Sales Incentive App</title>
+  <title>Sales Incentive Calculator</title>
+  <!-- CSS -->
   <link rel="stylesheet" href="style.css">
+  <!-- Supabase SDK -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body>
-
+<!-- ================= PAGE 1 : INPUT FORM ================= -->
 <div class="card" id="page1">
   <h2>Sales Incentive Calculator</h2>
-
-  <h3>Brand-wise Sales Entry</h3>
-
-  <div id="brands"></div>
-
-  <button type="button" onclick="addBrand()">➕ Add Brand</button>
-
-  <hr>
-
-  <h3>Touchpoint Information</h3>
-
-  <label>Total Resources</label>
-  <input type="number" id="resources">
-
-  <label>Resources Met Target</label>
-  <input type="number" id="qualified">
-
+  <!-- Salesman Type -->
+  <label>Salesman Type</label>
+  <select id="type" onchange="toggleForm()">
+    <option value="primary">Primary Salesman</option>
+    <option value="secondary">Secondary Salesman</option>
+  </select>
+  <!-- Employee Section (PRIMARY ONLY) -->
+  <div id="employeeSection">
+    <label>Employee Code</label>
+    <input type="number" id="empCode" placeholder="Enter Employee Code" onblur="findEmployee()">
+    <label>Employee Name</label>
+    <input type="text" id="empName" disabled>
+    <label>Designation</label>
+    <input type="text" id="designation" disabled>
+  </div>
+  <!-- Dynamic Form -->
+  <div id="form"></div>
   <button onclick="calculate()">Calculate Incentive</button>
 </div>
-
+<!-- ================= PAGE 2 : SUMMARY ================= -->
 <div class="card" id="page2" style="display:none">
-  <h2>Incentive Result</h2>
+  <h2>Incentive Summary</h2>
   <div id="result"></div>
   <button onclick="goBack()">⬅ Back</button>
 </div>
-
+<!-- JS -->
 <script src="script.js"></script>
 </body>
 </html>
