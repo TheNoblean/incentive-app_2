@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sales Incentive App</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="card" id="page1">
+  <h2>Sales Incentive Calculator</h2>
+
+  <h3>Brand-wise Sales Entry</h3>
+
+  <div id="brands"></div>
+
+  <button type="button" onclick="addBrand()">➕ Add Brand</button>
+
+  <hr>
+
+  <h3>Touchpoint Information</h3>
+
+  <label>Total Resources</label>
+  <input type="number" id="resources">
+
+  <label>Resources Met Target</label>
+  <input type="number" id="qualified">
+
+  <button onclick="calculate()">Calculate Incentive</button>
+</div>
+
+<div class="card" id="page2" style="display:none">
+  <h2>Incentive Result</h2>
+  <div id="result"></div>
+  <button onclick="goBack()">⬅ Back</button>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
