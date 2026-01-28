@@ -8,7 +8,7 @@ async function findEmployee() {
   const code = document.getElementById("empCode").value;
   if (!code) return;
   const { data, error } = await supabaseClient
-    .from("employees") // ✅ FIXED
+    .from("employees")
     .select("employee_name, designation")
     .eq("employee_code", code)
     .single();
@@ -22,131 +22,188 @@ async function findEmployee() {
 
 /* ---------------- FORM TOGGLE ---------------- */
 function toggleForm() {
-  let type = document.getElementById("type").value;
-  let form = document.getElementById("form");
-  let employeeSection = document.getElementById("employeeSection");
-  let commonBrandsHTML = `
-    <label>Proposed Amount</label>
-    <input id="proposed" type="number">
+  const type = document.getElementById("type").value;
+  const employeeSection = document.getElementById("employeeSection");
+  employeeSection.style.display = type === "primary" ? "block" : "none";
+
+  const extraFields = type === "primary" ? `
+    <label>Total Resources</label>
+    <input class="brand-resources" type="number" min="0">
+    <label>Resources Met TP TGT</label>
+    <input class="brand-qualified" type="number" min="0">
+  ` : `
+    <label>Touchpoint Target</label>
+    <input class="brand-tpTarget" type="number" min="0">
+    <label>Touchpoint Achievement</label>
+    <input class="brand-tpAchieved" type="number" min="0">
+  `;
+
+  document.getElementById("form").innerHTML = `
     <div id="brands">
       <label>Brands</label>
       <div class="brand-entry">
         <label>Brand Name</label>
-        <input class="brand-name" type="text">
+        <input class="brand-name" type="text" required>
+        <label>Proposed Amount (₦)</label>
+        <input class="brand-proposed" type="number" min="0" required>
         <label>Sales Target</label>
-        <input class="brand-target" type="number">
+        <input class="brand-target" type="number" min="0" required>
         <label>Sales Achievement</label>
-        <input class="brand-achieved" type="number">
+        <input class="brand-achieved" type="number" min="0" required>
+        ${extraFields}
       </div>
     </div>
     <button type="button" onclick="addBrand()">Add Another Brand</button>
   `;
-  if (type === "primary") {
-    employeeSection.style.display = "block";
-    form.innerHTML = `
-      ${commonBrandsHTML}
-      <label>Total Resources</label>
-      <input id="resources" type="number">
-      <label>Resources Met TP TGT</label>
-      <input id="qualified" type="number">
-    `;
-  } else {
-    employeeSection.style.display = "none";
-    form.innerHTML = `
-      ${commonBrandsHTML}
-      <label>Touchpoint Target</label>
-      <input id="tpTarget" type="number">
-      <label>Touchpoint Achievement</label>
-      <input id="tpAchieved" type="number">
-    `;
-  }
 }
 
 /* ---------------- ADD BRAND ---------------- */
 function addBrand() {
-  const brands = document.getElementById('brands');
+  const type = document.getElementById("type").value;
+  const extraFields = type === "primary" ? `
+    <label>Total Resources</label>
+    <input class="brand-resources" type="number" min="0">
+    <label>Resources Met TP TGT</label>
+    <input class="brand-qualified" type="number" min="0">
+  ` : `
+    <label>Touchpoint Target</label>
+    <input class="brand-tpTarget" type="number" min="0">
+    <label>Touchpoint Achievement</label>
+    <input class="brand-tpAchieved" type="number" min="0">
+  `;
+
   const entry = document.createElement('div');
   entry.className = 'brand-entry';
   entry.innerHTML = `
     <label>Brand Name</label>
-    <input class="brand-name" type="text">
+    <input class="brand-name" type="text" required>
+    <label>Proposed Amount (₦)</label>
+    <input class="brand-proposed" type="number" min="0" required>
     <label>Sales Target</label>
-    <input class="brand-target" type="number">
+    <input class="brand-target" type="number" min="0" required>
     <label>Sales Achievement</label>
-    <input class="brand-achieved" type="number">
+    <input class="brand-achieved" type="number" min="0" required>
+    ${extraFields}
   `;
-  brands.appendChild(entry);
+  document.getElementById('brands').appendChild(entry);
 }
 
 /* ---------------- CALCULATION ---------------- */
 function calculate() {
   const type = document.getElementById("type").value;
-  const proposed = Number(document.getElementById("proposed").value);
-  if (!proposed || proposed <= 0) {
-    alert("Please enter a valid proposed amount");
-    return;
-  }
-  const targetElements = document.querySelectorAll(".brand-target");
-  const achievedElements = document.querySelectorAll(".brand-achieved");
-  if (targetElements.length === 0) {
+  const brandEntries = document.querySelectorAll(".brand-entry");
+
+  if (brandEntries.length === 0) {
     alert("Please add at least one brand");
     return;
   }
-  let totalTarget = Array.from(targetElements).reduce((sum, el) => sum + Number(el.value), 0);
-  let totalAchieved = Array.from(achievedElements).reduce((sum, el) => sum + Number(el.value), 0);
-  if (totalTarget <= 0) {
-    alert("Total sales target must be greater than zero");
-    return;
-  }
-  let salesPercent = totalAchieved / totalTarget;
-  let resultHTML = "";
-  /* ================= PRIMARY SALESMAN ================= */
-  if (type === "primary") {
-    if (salesPercent < 0.8) {
-      showResult("❌ Not eligible (Sales below 80%)");
+
+  let totalPayout = 0;
+  let rows = [];
+
+  for (let entry of brandEntries) {
+    const name = entry.querySelector(".brand-name").value.trim();
+    const proposed = Number(entry.querySelector(".brand-proposed").value);
+    const target = Number(entry.querySelector(".brand-target").value);
+    const achieved = Number(entry.querySelector(".brand-achieved").value);
+
+    if (!name) {
+      alert("Brand name is required for each entry");
       return;
     }
-    const resources = Number(document.getElementById("resources").value);
-    const qualified = Number(document.getElementById("qualified").value);
-    if (!resources || resources <= 0) {
-      alert("Total resources must be greater than zero");
+    if (isNaN(proposed) || proposed <= 0) {
+      alert(`Please enter a valid Proposed Amount for ${name}`);
       return;
     }
-    const generated = salesPercent * proposed;
-    const salesIncentive = generated * 0.6;
-    const touchpointEarned = (generated * 0.4 / resources) * qualified;
-    resultHTML = `
-      <p>Sales Incentive: <b>₦${salesIncentive.toFixed(0)}</b></p>
-      <p>Touchpoint Earned: <b>₦${touchpointEarned.toFixed(0)}</b></p>
-      <hr>
-      <h3>Total Payout: ₦${(salesIncentive + touchpointEarned).toFixed(0)}</h3>
-    `;
-  }
-  /* ================= SECONDARY SALESMAN ================= */
-  else {
-    /* ---- SALES INCENTIVE ---- */
+    if (isNaN(target) || target <= 0) {
+      alert(`Please enter a valid Sales Target for ${name}`);
+      return;
+    }
+    if (isNaN(achieved)) {
+      alert(`Please enter Sales Achievement for ${name}`);
+      return;
+    }
+
+    const salesPercent = achieved / target;
     let salesIncentive = 0;
-    const salesPool = proposed * 0.5;
-    if (salesPercent >= 0.8) {
-      if (salesPercent > 2) salesPercent = 2; // cap at 200%
-      salesIncentive = salesPercent * salesPool;
+    let touchpointEarned = 0;
+    let brandTotal = 0;
+
+    if (type === "primary") {
+      const resources = Number(entry.querySelector(".brand-resources").value);
+      const qualified = Number(entry.querySelector(".brand-qualified").value);
+
+      if (isNaN(resources) || resources <= 0) {
+        alert(`Please enter valid Total Resources for ${name}`);
+        return;
+      }
+      if (isNaN(qualified) || qualified < 0 || qualified > resources) {
+        alert(`Resources Met TP TGT must be between 0 and Total Resources for ${name}`);
+        return;
+      }
+
+      if (salesPercent >= 0.8) {
+        const generated = salesPercent * proposed;
+        salesIncentive = generated * 0.6;
+        touchpointEarned = (generated * 0.4 / resources) * qualified;
+      }
+    } else {
+      const tpTarget = Number(entry.querySelector(".brand-tpTarget").value);
+      const tpAchieved = Number(entry.querySelector(".brand-tpAchieved").value);
+
+      if (isNaN(tpTarget) || tpTarget < 0) {
+        alert(`Please enter valid Touchpoint Target for ${name}`);
+        return;
+      }
+      if (isNaN(tpAchieved) || tpAchieved < 0) {
+        alert(`Please enter valid Touchpoint Achievement for ${name}`);
+        return;
+      }
+
+      if (salesPercent >= 0.8) {
+        let cappedPercent = Math.min(salesPercent, 2);
+        salesIncentive = cappedPercent * (proposed * 0.5);
+      }
+
+      touchpointEarned = (tpAchieved >= tpTarget) ? (proposed * 0.5) : 0;
     }
-    /* ---- TOUCHPOINT INCENTIVE ---- */
-    const tpTarget = Number(document.getElementById("tpTarget").value);
-    const tpAchieved = Number(document.getElementById("tpAchieved").value);
-    if (!tpTarget || !tpAchieved) {
-      alert("Please enter touchpoint target and achievement");
-      return;
-    }
-    let touchpointEarned = tpAchieved >= tpTarget ? proposed * 0.5 : 0;
-    resultHTML = `
-      <p>Sales Incentive: <b>₦${salesIncentive.toFixed(0)}</b></p>
-      <p>Touchpoint Earned: <b>₦${touchpointEarned.toFixed(0)}</b></p>
-      <hr>
-      <h3>Total Payout: ₦${(salesIncentive + touchpointEarned).toFixed(0)}</h3>
-    `;
+
+    brandTotal = salesIncentive + touchpointEarned;
+    totalPayout += brandTotal;
+
+    rows.push(`
+      <tr>
+        <td>${name}</td>
+        <td>₦${salesIncentive.toFixed(0)}</td>
+        <td>₦${touchpointEarned.toFixed(0)}</td>
+        <td>₦${brandTotal.toFixed(0)}</td>
+      </tr>
+    `);
   }
-  showResult(resultHTML);
+
+  const tableHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Brand</th>
+          <th>Sales Incentive</th>
+          <th>Touchpoint Earned</th>
+          <th>Brand Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.join('')}
+      </tbody>
+      <tfoot>
+        <tr>
+          <th colspan="3">Grand Total Payout</th>
+          <th>₦${totalPayout.toFixed(0)}</th>
+        </tr>
+      </tfoot>
+    </table>
+  `;
+
+  showResult(tableHTML);
 }
 
 /* ---------------- PAGE SWITCH ---------------- */
@@ -155,6 +212,7 @@ function showResult(html) {
   document.getElementById("page1").style.display = "none";
   document.getElementById("page2").style.display = "block";
 }
+
 function goBack() {
   document.getElementById("page2").style.display = "none";
   document.getElementById("page1").style.display = "block";
