@@ -1,56 +1,82 @@
 body {
   background: linear-gradient(to right, #1E3A8A, #10B981);
   font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
 }
 .card {
   background: white;
-  width: 420px;
-  margin: 40px auto;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
   padding: 25px;
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 }
 h2 {
   text-align: center;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
+  color: #1E3A8A;
 }
 label {
-  margin-top: 10px;
+  margin-top: 12px;
   display: block;
   font-weight: bold;
+  color: #333;
 }
 input, select {
   width: 100%;
-  padding: 8px;
+  padding: 10px;
   margin-top: 5px;
   border-radius: 6px;
   border: 1px solid #ccc;
+  box-sizing: border-box;
 }
 input:disabled {
   background: #F3F4F6;
 }
 button {
-  margin-top: 15px;
+  margin-top: 20px;
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   background: #10B981;
   border: none;
   color: white;
   font-size: 16px;
   border-radius: 6px;
   cursor: pointer;
+  font-weight: bold;
 }
 button:hover {
   background: #059669;
 }
+.brand-entry {
+  margin: 20px 0;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #f9f9f9;
+}
 #result {
   background: #F9FAFB;
-  padding: 15px;
+  padding: 20px;
   border-radius: 8px;
 }
-.brand-entry {
-  margin-bottom: 15px;
+#result table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+#result th, #result td {
+  border: 1px solid #ccc;
   padding: 10px;
-  border: 1px solid #eee;
-  border-radius: 6px;
+  text-align: right;
+}
+#result th {
+  background: #E5E7EB;
+  text-align: left;
+}
+#result tfoot th, #result tfoot td {
+  font-weight: bold;
+  background: #E5E7EB;
 }
