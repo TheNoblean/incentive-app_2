@@ -2,37 +2,40 @@ body {
   background: linear-gradient(to right, #1E3A8A, #10B981);
   font-family: Arial, sans-serif;
   margin: 0;
-  padding: 20px;
+  padding: 15px;
   min-height: 100vh;
 }
 
 .card {
   background: white;
-  max-width: 960px;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.18);
 }
 
 h2, h4 {
-  margin: 0 0 16px;
+  margin: 0 0 12px;
   color: #1E3A8A;
+  font-size: 1.4rem;
 }
 
 label {
   display: block;
-  margin: 12px 0 4px;
-  font-weight: bold;
-  color: #333;
+  margin: 8px 0 3px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #444;
 }
 
 input, select {
   width: 100%;
-  padding: 10px;
-  margin-bottom: 8px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  padding: 7px 9px;
+  margin-bottom: 4px;
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+  font-size: 0.92rem;
   box-sizing: border-box;
 }
 
@@ -41,13 +44,13 @@ input:disabled {
 }
 
 button {
-  margin-top: 20px;
-  padding: 12px 20px;
+  margin-top: 16px;
+  padding: 10px 20px;
   background: #10B981;
   color: white;
   border: none;
   border-radius: 6px;
-  font-size: 16px;
+  font-size: 0.98rem;
   cursor: pointer;
 }
 
@@ -55,96 +58,43 @@ button:hover {
   background: #059669;
 }
 
-.add-brand-btn {
-  display: block;
-  margin: 24px auto 0;
-  background: #3B82F6;
-}
-
-.add-brand-btn:hover {
-  background: #2563EB;
-}
-
 .brands-container {
-  margin: 20px 0;
-}
-
-.brand-row {
-  display: flex;
-  gap: 24px;
-  margin-bottom: 32px;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin: 16px 0 20px;
 }
 
 .brand-entry {
-  flex: 1;
-  min-width: 320px;
-  padding: 16px;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
-  background: #f9fafb;
-}
-
-.brand-entry h4 {
-  margin-bottom: 12px;
-  font-size: 1.1rem;
-  color: #1E40AF;
-}
-
-#result {
-  background: #f9fafb;
-  padding: 20px;
+  padding: 14px;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
+  background: #fafafa;
+  font-size: 0.92rem;
 }
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 12px;
-}
-
-th, td {
-  padding: 10px;
-  text-align: right;
-  border: 1px solid #ddd;
-}
-
-th {
-  background: #e5e7eb;
-  text-align: left;
-}
-
-tfoot th, tfoot td {
-  font-weight: bold;
-  background: #d1d5db;
-}
-
-/* Mobile adjustment */
-@media (max-width: 768px) {
-  .brand-row {
-    flex-direction: column;
-    gap: 20px;
-  }
-  .card {
-    padding: 16px;
-  }
-/* ... previous styles remain ... */
 
 .brand-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
+}
+
+.brand-header h4 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #1e40af;
 }
 
 .remove-btn {
   background: #ef4444;
   color: white;
   border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 13px;
+  padding: 5px 11px;
+  border-radius: 5px;
+  font-size: 0.82rem;
   cursor: pointer;
+  font-weight: 500;
 }
 
 .remove-btn:hover {
@@ -153,11 +103,54 @@ tfoot th, tfoot td {
 
 .add-brand-btn {
   display: block;
-  margin: 20px auto;
+  margin: 16px auto;
   background: #3b82f6;
-  padding: 10px 20px;
+  padding: 9px 18px;
+  font-size: 0.96rem;
 }
 
 .add-brand-btn:hover {
   background: #2563eb;
+}
+
+#result {
+  background: #f9fafb;
+  padding: 18px;
+  border-radius: 8px;
+  font-size: 0.94rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 0.92rem;
+}
+
+th, td {
+  padding: 8px 10px;
+  text-align: right;
+  border: 1px solid #e5e7eb;
+}
+
+th {
+  background: #e5e7eb;
+  text-align: left;
+  font-weight: 600;
+}
+
+tfoot th, tfoot td {
+  background: #d1d5db;
+  font-weight: bold;
+}
+
+/* Mobile – stack everything */
+@media (max-width: 768px) {
+  .brands-container {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .card {
+    padding: 16px;
+  }
 }
