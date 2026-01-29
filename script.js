@@ -1,7 +1,9 @@
+/* ---------------- SUPABASE SETUP ---------------- */
 const SUPABASE_URL = "https://vrbsraxcjoteibpihtjm.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZyYnNyYXhjam90ZWlicGlodGptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgyMjkyNjksImV4cCI6MjA4MzgwNTI2OX0.a3k-Lx24DgmnYrG72c3vZwXikBLKdJujS_R7xrgrrUY";
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+/* ---------------- FETCH EMPLOYEE ---------------- */
 async function findEmployee() {
   const code = document.getElementById("empCode")?.value;
   if (!code) return;
@@ -18,43 +20,7 @@ async function findEmployee() {
   document.getElementById("designation").value = data.designation;
 }
 
-function updateForm() {
-  const type = document.getElementById("type").value;
-  const brandCount = document.getElementById("brandCount")?.value || "2";
-
-  document.getElementById("employeeSection").style.display = 
-    type === "primary" ? "block" : "none";
-
-  document.getElementById("brandCountSection").style.display = 
-    type ? "block" : "none";
-
-  if (!type) {
-    document.getElementById("form").innerHTML = "";
-    return;
-  }
-
-  const extraFields = type === "primary" ? `
-    <label>Total Resources</label>
-    <input class="brand-resources" type="number" min="0" required>
-    <label>Resources Met TP TGT</label>
-    <input class="brand-qualified" type="number" min="0" required>
-  ` : `
-    <label>Touchpoint Target</label>
-    <input class="brand-tpTarget" type="number" min="0" required>
-    <label>Touchpoint Achievement</label>
-    <input class="brand-tpAchieved" type="number" min="0" required>
-  `;
-
-  let brandsHTML = '';
-  const count = Number(brandCount);
-
-  for (let i = 1; i <= count; i++) {
-    brandsHTML += createBrandHTML(i, extraFields, i > 1);
-  }
-
-  document.getElementById("form").innerHTML = brandsHTML;
-}
-
+/* ---------------- FORM GENERATION HELPERS ---------------- */
 function createBrandHTML(index, extraFields, showRemove = false) {
   return `
     <div class="brand-entry" data-brand-id="${index}">
@@ -64,41 +30,85 @@ function createBrandHTML(index, extraFields, showRemove = false) {
       </div>
       <label>Brand Name</label>
       <input class="brand-name" type="text" required>
-      <label>Proposed Amount (₦)</label>
+      <label>Proposed (₦)</label>
       <input class="brand-proposed" type="number" min="0" required>
-      <label>Sales Target</label>
+      <label>Target</label>
       <input class="brand-target" type="number" min="0" required>
-      <label>Sales Achievement</label>
+      <label>Achieved</label>
       <input class="brand-achieved" type="number" min="0" required>
       ${extraFields}
     </div>
   `;
 }
 
-function addBrand() {
+/* ---------------- UPDATE FORM WHEN TYPE OR COUNT CHANGES ---------------- */
+function updateForm() {
   const type = document.getElementById("type").value;
-  if (!type) return;
+  const brandCountSelect = document.getElementById("brandCount");
+  const brandCount = brandCountSelect ? Number(brandCountSelect.value) : 2;
 
+  // Show/hide employee section
+  document.getElementById("employeeSection").style.display = 
+    type === "primary" ? "block" : "none";
+
+  // Show brand count selector only after type is chosen
+  document.getElementById("brandCountSection").style.display = 
+    type ? "block" : "none";
+
+  if (!type) {
+    document.getElementById("form").innerHTML = "";
+    return;
+  }
+
+  // Determine extra fields based on salesman type
   const extraFields = type === "primary" ? `
-    <label>Total Resources</label>
+    <label>Resources</label>
     <input class="brand-resources" type="number" min="0" required>
-    <label>Resources Met TP TGT</label>
+    <label>Met TP TGT</label>
     <input class="brand-qualified" type="number" min="0" required>
   ` : `
-    <label>Touchpoint Target</label>
+    <label>TP Target</label>
     <input class="brand-tpTarget" type="number" min="0" required>
-    <label>Touchpoint Achievement</label>
+    <label>TP Achieved</label>
+    <input class="brand-tpAchieved" type="number" min="0" required>
+  `;
+
+  // Generate initial brands
+  let brandsHTML = '';
+  for (let i = 1; i <= brandCount; i++) {
+    brandsHTML += createBrandHTML(i, extraFields, i > 1);
+  }
+
+  document.getElementById("form").innerHTML = brandsHTML;
+}
+
+/* ---------------- ADD NEW BRAND ---------------- */
+function addBrand() {
+  const type = document.getElementById("type").value;
+  if (!type) {
+    alert("Please select Salesman Type first");
+    return;
+  }
+
+  const extraFields = type === "primary" ? `
+    <label>Resources</label>
+    <input class="brand-resources" type="number" min="0" required>
+    <label>Met TP TGT</label>
+    <input class="brand-qualified" type="number" min="0" required>
+  ` : `
+    <label>TP Target</label>
+    <input class="brand-tpTarget" type="number" min="0" required>
+    <label>TP Achieved</label>
     <input class="brand-tpAchieved" type="number" min="0" required>
   `;
 
   const container = document.getElementById("form");
   const currentCount = container.querySelectorAll(".brand-entry").length + 1;
 
-  const newBrand = document.createElement('div');
-  newBrand.innerHTML = createBrandHTML(currentCount, extraFields, true);
-  container.appendChild(newBrand.firstElementChild);
+  container.insertAdjacentHTML('beforeend', createBrandHTML(currentCount, extraFields, true));
 }
 
+/* ---------------- REMOVE BRAND ---------------- */
 function removeBrand(button) {
   const entry = button.closest(".brand-entry");
   if (!entry) return;
@@ -119,6 +129,7 @@ function removeBrand(button) {
   });
 }
 
+/* ---------------- CALCULATE INCENTIVE ---------------- */
 function calculate() {
   const type = document.getElementById("type").value;
   if (!type) {
@@ -136,27 +147,38 @@ function calculate() {
   let rows = [];
 
   for (let entry of brandEntries) {
-    const name = entry.querySelector(".brand-name").value.trim();
-    const proposed = Number(entry.querySelector(".brand-proposed").value);
-    const target = Number(entry.querySelector(".brand-target").value);
-    const achieved = Number(entry.querySelector(".brand-achieved").value);
+    const nameInput    = entry.querySelector(".brand-name");
+    const proposedInput = entry.querySelector(".brand-proposed");
+    const targetInput   = entry.querySelector(".brand-target");
+    const achievedInput = entry.querySelector(".brand-achieved");
 
+    const name     = nameInput.value.trim();
+    const proposed = Number(proposedInput.value);
+    const target   = Number(targetInput.value);
+    const achieved = Number(achievedInput.value);
+
+    // Skip completely empty entries
     if (!name && proposed === 0 && target === 0 && achieved === 0) continue;
 
+    // Validation
     if (!name) {
       alert("Brand name is required when values are entered");
+      nameInput.focus();
       return;
     }
     if (isNaN(proposed) || proposed <= 0) {
-      alert(`Valid Proposed Amount required for ${name || "unnamed brand"}`);
+      alert(`Valid Proposed Amount required for ${name}`);
+      proposedInput.focus();
       return;
     }
     if (isNaN(target) || target <= 0) {
       alert(`Valid Sales Target required for ${name}`);
+      targetInput.focus();
       return;
     }
     if (isNaN(achieved)) {
       alert(`Sales Achievement required for ${name}`);
+      achievedInput.focus();
       return;
     }
 
@@ -173,7 +195,7 @@ function calculate() {
         return;
       }
       if (isNaN(qualified) || qualified < 0 || qualified > resources) {
-        alert(`Resources Met TP TGT must be valid (0-${resources}) for ${name}`);
+        alert(`Resources Met TP TGT must be between 0 and ${resources} for ${name}`);
         return;
       }
 
@@ -183,21 +205,21 @@ function calculate() {
         touchpointEarned = (generated * 0.4 / resources) * qualified;
       }
     } else {
-      const tpTarget = Number(entry.querySelector(".brand-tpTarget").value);
+      const tpTarget   = Number(entry.querySelector(".brand-tpTarget").value);
       const tpAchieved = Number(entry.querySelector(".brand-tpAchieved").value);
 
-      if (isNaN(tpTarget)) {
+      if (isNaN(tpTarget) || tpTarget < 0) {
         alert(`Touchpoint Target required for ${name}`);
         return;
       }
-      if (isNaN(tpAchieved)) {
+      if (isNaN(tpAchieved) || tpAchieved < 0) {
         alert(`Touchpoint Achievement required for ${name}`);
         return;
       }
 
       if (salesPercent >= 0.8) {
-        const capped = Math.min(salesPercent, 2);
-        salesIncentive = capped * (proposed * 0.5);
+        const cappedPercent = Math.min(salesPercent, 2);
+        salesIncentive = cappedPercent * (proposed * 0.5);
       }
       touchpointEarned = (tpAchieved >= tpTarget) ? (proposed * 0.5) : 0;
     }
@@ -244,6 +266,7 @@ function calculate() {
   document.getElementById("page2").style.display = "block";
 }
 
+/* ---------------- PAGE NAVIGATION ---------------- */
 function goBack() {
   document.getElementById("page2").style.display = "none";
   document.getElementById("page1").style.display = "block";
