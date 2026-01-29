@@ -13,12 +13,13 @@
   <h2>Sales Incentive Calculator</h2>
 
   <label>Salesman Type</label>
-  <select id="type" onchange="toggleForm()">
+  <select id="type" onchange="updateForm()">
+    <option value="" selected disabled>Select Salesman Type</option>
     <option value="primary">Primary Salesman</option>
     <option value="secondary">Secondary Salesman</option>
   </select>
 
-  <div id="employeeSection">
+  <div id="employeeSection" style="display: none;">
     <label>Employee Code</label>
     <input type="number" id="empCode" placeholder="Enter Employee Code" onblur="findEmployee()">
     <label>Employee Name</label>
@@ -27,7 +28,19 @@
     <input type="text" id="designation" disabled>
   </div>
 
-  <div id="form"></div>
+  <div id="brandCountSection" style="display: none;">
+    <label>Initial Number of Brands</label>
+    <select id="brandCount" onchange="updateForm()">
+      <option value="1">1 Brand</option>
+      <option value="2" selected>2 Brands</option>
+      <option value="3">3 Brands</option>
+      <option value="4">4 Brands</option>
+    </select>
+  </div>
+
+  <div id="form" class="brands-container"></div>
+
+  <button type="button" class="add-brand-btn" onclick="addBrand()">Add Another Brand</button>
 
   <button onclick="calculate()">Calculate Incentive</button>
 </div>
