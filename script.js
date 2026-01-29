@@ -3,7 +3,7 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 async function findEmployee() {
-  const code = document.getElementById("empCode").value;
+  const code = document.getElementById("empCode")?.value;
   if (!code) return;
   const { data, error } = await supabaseClient
     .from("employees")
@@ -18,98 +18,115 @@ async function findEmployee() {
   document.getElementById("designation").value = data.designation;
 }
 
-function toggleForm() {
+function updateForm() {
   const type = document.getElementById("type").value;
-  document.getElementById("employeeSection").style.display = type === "primary" ? "block" : "none";
+  const brandCount = document.getElementById("brandCount")?.value || "2";
+
+  document.getElementById("employeeSection").style.display = 
+    type === "primary" ? "block" : "none";
+
+  document.getElementById("brandCountSection").style.display = 
+    type ? "block" : "none";
+
+  if (!type) {
+    document.getElementById("form").innerHTML = "";
+    return;
+  }
 
   const extraFields = type === "primary" ? `
     <label>Total Resources</label>
-    <input class="brand-resources" type="number" min="0">
+    <input class="brand-resources" type="number" min="0" required>
     <label>Resources Met TP TGT</label>
-    <input class="brand-qualified" type="number" min="0">
+    <input class="brand-qualified" type="number" min="0" required>
   ` : `
     <label>Touchpoint Target</label>
-    <input class="brand-tpTarget" type="number" min="0">
+    <input class="brand-tpTarget" type="number" min="0" required>
     <label>Touchpoint Achievement</label>
-    <input class="brand-tpAchieved" type="number" min="0">
+    <input class="brand-tpAchieved" type="number" min="0" required>
   `;
 
-  document.getElementById("form").innerHTML = `
-    <div class="brands-container" id="brands">
-      <div class="brand-row">
-        <div class="brand-entry">
-          <h4>Brand 1</h4>
-          <label>Brand Name</label>
-          <input class="brand-name" type="text" required>
-          <label>Proposed Amount (₦)</label>
-          <input class="brand-proposed" type="number" min="0" required>
-          <label>Sales Target</label>
-          <input class="brand-target" type="number" min="0" required>
-          <label>Sales Achievement</label>
-          <input class="brand-achieved" type="number" min="0" required>
-          ${extraFields}
-        </div>
-        <div class="brand-entry">
-          <h4>Brand 2</h4>
-          <label>Brand Name</label>
-          <input class="brand-name" type="text">
-          <label>Proposed Amount (₦)</label>
-          <input class="brand-proposed" type="number" min="0">
-          <label>Sales Target</label>
-          <input class="brand-target" type="number" min="0">
-          <label>Sales Achievement</label>
-          <input class="brand-achieved" type="number" min="0">
-          ${extraFields}
-        </div>
-      </div>
-    </div>
+  let brandsHTML = '';
+  const count = Number(brandCount);
 
-    <button type="button" class="add-brand-btn" onclick="addBrandRow()">Add Another Pair of Brands</button>
+  for (let i = 1; i <= count; i++) {
+    brandsHTML += createBrandHTML(i, extraFields, i > 1);
+  }
+
+  document.getElementById("form").innerHTML = brandsHTML;
+}
+
+function createBrandHTML(index, extraFields, showRemove = false) {
+  return `
+    <div class="brand-entry" data-brand-id="${index}">
+      <div class="brand-header">
+        <h4>Brand ${index}</h4>
+        ${showRemove ? '<button type="button" class="remove-btn" onclick="removeBrand(this)">Remove</button>' : ''}
+      </div>
+      <label>Brand Name</label>
+      <input class="brand-name" type="text" required>
+      <label>Proposed Amount (₦)</label>
+      <input class="brand-proposed" type="number" min="0" required>
+      <label>Sales Target</label>
+      <input class="brand-target" type="number" min="0" required>
+      <label>Sales Achievement</label>
+      <input class="brand-achieved" type="number" min="0" required>
+      ${extraFields}
+    </div>
   `;
 }
 
-function addBrandRow() {
+function addBrand() {
   const type = document.getElementById("type").value;
+  if (!type) return;
+
   const extraFields = type === "primary" ? `
     <label>Total Resources</label>
-    <input class="brand-resources" type="number" min="0">
+    <input class="brand-resources" type="number" min="0" required>
     <label>Resources Met TP TGT</label>
-    <input class="brand-qualified" type="number" min="0">
+    <input class="brand-qualified" type="number" min="0" required>
   ` : `
     <label>Touchpoint Target</label>
-    <input class="brand-tpTarget" type="number" min="0">
+    <input class="brand-tpTarget" type="number" min="0" required>
     <label>Touchpoint Achievement</label>
-    <input class="brand-tpAchieved" type="number" min="0">
+    <input class="brand-tpAchieved" type="number" min="0" required>
   `;
 
-  const row = document.createElement('div');
-  row.className = 'brand-row';
+  const container = document.getElementById("form");
+  const currentCount = container.querySelectorAll(".brand-entry").length + 1;
 
-  for (let i = 0; i < 2; i++) {
-    const entry = document.createElement('div');
-    entry.className = 'brand-entry';
-    entry.innerHTML = `
-      <h4>Brand</h4>
-      <label>Brand Name</label>
-      <input class="brand-name" type="text">
-      <label>Proposed Amount (₦)</label>
-      <input class="brand-proposed" type="number" min="0">
-      <label>Sales Target</label>
-      <input class="brand-target" type="number" min="0">
-      <label>Sales Achievement</label>
-      <input class="brand-achieved" type="number" min="0">
-      ${extraFields}
-    `;
-    row.appendChild(entry);
+  const newBrand = document.createElement('div');
+  newBrand.innerHTML = createBrandHTML(currentCount, extraFields, true);
+  container.appendChild(newBrand.firstElementChild);
+}
+
+function removeBrand(button) {
+  const entry = button.closest(".brand-entry");
+  if (!entry) return;
+
+  const allEntries = document.querySelectorAll(".brand-entry");
+  if (allEntries.length <= 1) {
+    alert("You must keep at least one brand.");
+    return;
   }
 
-  document.getElementById('brands').appendChild(row);
+  entry.remove();
+
+  // Re-number remaining brands
+  const remaining = document.querySelectorAll(".brand-entry");
+  remaining.forEach((el, i) => {
+    const header = el.querySelector(".brand-header h4");
+    if (header) header.textContent = `Brand ${i + 1}`;
+  });
 }
 
 function calculate() {
   const type = document.getElementById("type").value;
-  const brandEntries = document.querySelectorAll(".brand-entry");
+  if (!type) {
+    alert("Please select Salesman Type");
+    return;
+  }
 
+  const brandEntries = document.querySelectorAll(".brand-entry");
   if (brandEntries.length === 0) {
     alert("Please add at least one brand");
     return;
@@ -119,43 +136,28 @@ function calculate() {
   let rows = [];
 
   for (let entry of brandEntries) {
-    const nameInput = entry.querySelector(".brand-name");
-    const proposedInput = entry.querySelector(".brand-proposed");
-    const targetInput = entry.querySelector(".brand-target");
-    const achievedInput = entry.querySelector(".brand-achieved");
+    const name = entry.querySelector(".brand-name").value.trim();
+    const proposed = Number(entry.querySelector(".brand-proposed").value);
+    const target = Number(entry.querySelector(".brand-target").value);
+    const achieved = Number(entry.querySelector(".brand-achieved").value);
 
-    const name = nameInput.value.trim();
-    const proposed = Number(proposedInput.value);
-    const target = Number(targetInput.value);
-    const achieved = Number(achievedInput.value);
+    if (!name && proposed === 0 && target === 0 && achieved === 0) continue;
 
-    // Skip completely empty brands
-    if (!name && !proposed && !target && !achieved) continue;
-
-    // Require name + proposed + target + achievement if any value is filled
-    if (proposed > 0 || target > 0 || achieved > 0) {
-      if (!name) {
-        alert("Brand name is required when values are entered");
-        nameInput.focus();
-        return;
-      }
-      if (isNaN(proposed) || proposed <= 0) {
-        alert(`Valid Proposed Amount required for ${name}`);
-        proposedInput.focus();
-        return;
-      }
-      if (isNaN(target) || target <= 0) {
-        alert(`Valid Sales Target required for ${name}`);
-        targetInput.focus();
-        return;
-      }
-      if (isNaN(achieved)) {
-        alert(`Sales Achievement required for ${name}`);
-        achievedInput.focus();
-        return;
-      }
-    } else {
-      continue; // skip empty row
+    if (!name) {
+      alert("Brand name is required when values are entered");
+      return;
+    }
+    if (isNaN(proposed) || proposed <= 0) {
+      alert(`Valid Proposed Amount required for ${name || "unnamed brand"}`);
+      return;
+    }
+    if (isNaN(target) || target <= 0) {
+      alert(`Valid Sales Target required for ${name}`);
+      return;
+    }
+    if (isNaN(achieved)) {
+      alert(`Sales Achievement required for ${name}`);
+      return;
     }
 
     const salesPercent = achieved / target;
@@ -171,7 +173,7 @@ function calculate() {
         return;
       }
       if (isNaN(qualified) || qualified < 0 || qualified > resources) {
-        alert(`Resources Met TP TGT must be 0-${resources} for ${name}`);
+        alert(`Resources Met TP TGT must be valid (0-${resources}) for ${name}`);
         return;
       }
 
@@ -228,9 +230,7 @@ function calculate() {
           <th>Brand Total</th>
         </tr>
       </thead>
-      <tbody>
-        ${rows.join('')}
-      </tbody>
+      <tbody>${rows.join('')}</tbody>
       <tfoot>
         <tr>
           <th colspan="3">Grand Total Payout</th>
